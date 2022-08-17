@@ -3,8 +3,8 @@ import Body from './../components/BodyComponent.vue'
 import Login from './../components/LoginComponent.vue'
 
 const routes = [
-    { path: '/', name: 'Home', component: Body },
-    { path: '/login', name: 'Login', component: Login }
+  { path: '/', name: 'Home', component: Body },
+  { path: '/login', name: 'Login', component: Login }
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
