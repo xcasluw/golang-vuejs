@@ -10,7 +10,7 @@ type jsonResponse struct {
 	Message string `json:"message"`
 }
 
-func (app *application) Login(w http.ResponseWriter, r http.Request) {
+func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 	type credentials struct {
 		Username string `json:"email"`
 		Password string `json:"password"`
