@@ -5,57 +5,50 @@
         <h1 class="mt-5">Login</h1>
         <hr>
         
-        <form method="post" action="/login" class="needs-validation" novalidate>
-          <text-input-component
+        <FormTagComponent @myevent="submitHandler" name="myForm" event="myevent">
+          <TextInputComponent
+            v-model="email"
             label="Email"
             type="email"
             name="email"
             required="true">
-          </text-input-component>
+          </TextInputComponent>
 
-          <text-input-component
+          <TextInputComponent
+            v-model="password"
             label="Password"
             type="password"
             name="password"
             required="true">
-          </text-input-component>
+          </TextInputComponent>
           <hr>
           <input type="submit" class="btn btn-primary" value="Login">
-        </form>
+        </FormTagComponent>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import FormTagComponent from './forms/FormTagComponent.vue'
 import TextInputComponent from './forms/TextInputComponent.vue'
 
 export default {
   name: 'LoginComponent',
   components: {
+    FormTagComponent,
     TextInputComponent
   },
-    mounted() {
-      (function () {
-        'use strict'
-
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-        var forms = document.querySelectorAll('.needs-validation')
-
-        // Loop over them and prevent submission
-        Array.prototype.slice.call(forms)
-            .forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
-                event.preventDefault()
-                event.stopPropagation()
-                }
-
-                form.classList.add('was-validated')
-            }, false)
-            })
-        }
-      )()
+  data() {
+    return {
+      email: "",
+      password: ""
     }
+  },
+  methods: {
+    submitHandler() {
+      console.log('submit handler called - success')
+    }
+  }
 }
 </script>
