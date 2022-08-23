@@ -35,6 +35,7 @@
 <script>
 import FormTagComponent from './forms/FormTagComponent.vue'
 import TextInputComponent from './forms/TextInputComponent.vue'
+import { store } from './store.js'
 
 export default {
   name: 'LoginComponent',
@@ -45,13 +46,14 @@ export default {
   data() {
     return {
       email: "",
-      password: ""
+      password: "",
+      store
     }
   },
   methods: {
     submitHandler() {
       const payload = {
-        username: this.email,
+        email: this.email,
         password: this.password
       }
 
@@ -62,11 +64,11 @@ export default {
 
       fetch("http://localhost:8081/users/login", requestOptions)
         .then((response) => response.json())
-        .then((data) => {
-          if (data.error) {
-            console.log("Error: ", data.message)
+        .then((response) => {
+          if (response.error) {
+            console.log("Error: ", response.message)
           } else {
-            console.log(data)
+            store.token = response.data.token.token
           }
         })
     }
