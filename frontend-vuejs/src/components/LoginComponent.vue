@@ -36,6 +36,8 @@
 import FormTagComponent from './forms/FormTagComponent.vue'
 import TextInputComponent from './forms/TextInputComponent.vue'
 import { store } from './store.js'
+import router from './../router/index.js'
+import notie from 'notie'
 
 export default {
   name: 'LoginComponent',
@@ -67,8 +69,13 @@ export default {
         .then((response) => {
           if (response.error) {
             console.log("Error: ", response.message)
+            notie.alert({
+              type: 'error',
+              text: response.message
+            })
           } else {
             store.token = response.data.token.token
+            router.push("/")
           }
         })
     }
