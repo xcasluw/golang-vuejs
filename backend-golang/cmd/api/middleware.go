@@ -8,12 +8,12 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			payload := jsonResponse{
 				Error:   true,
-				Message: "Invlalid authentication credentials",
+				Message: "Invalid authentication credentials",
 			}
 
 			_ = app.writeJSON(w, http.StatusUnauthorized, payload)
+			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }

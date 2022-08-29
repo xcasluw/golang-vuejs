@@ -25,7 +25,7 @@ func (app *application) routes() http.Handler {
 	mux.Post("/users/login", app.Login)
 	mux.Post("/users/logout", app.Logout)
 
-	mux.Route("/admin", func(r chi.Router) {
+	mux.Route("/admin", func(mux chi.Router) {
 		mux.Use(app.AuthTokenMiddleware)
 
 		mux.Post("/foo", func(w http.ResponseWriter, r *http.Request) {
