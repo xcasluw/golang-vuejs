@@ -37,6 +37,7 @@ type User struct {
 	FirstName string    `json:"first_name,omitempty"`
 	LastName  string    `json:"last_name,omitempty"`
 	Password  string    `json:"password"`
+	Active    int       `json:"active"`
 	Token     Token     `json:"token"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -46,7 +47,12 @@ func (u *User) GetAll() ([]*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `SELECT id, email, first_name, last_name, password, created_at, updated_at FROM users ORDER BY last_name`
+	query := `SELECT id, email, first_name, last_name, password, user_active, created_at, updated_at,
+	CASE
+		WHEN (SELECT COUNT(id) FROM tokens t WHERE user_id = users.id AND t.expiry > NOW()) > 0 THEN 1
+		ELSE 0
+	END AS has_token
+	FROM users ORDER BY last_name`
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -64,8 +70,10 @@ func (u *User) GetAll() ([]*User, error) {
 			&user.FirstName,
 			&user.LastName,
 			&user.Password,
+			&user.Active,
 			&user.CreatedAt,
 			&user.UpdatedAt,
+			&user.Token.ID,
 		)
 		if err != nil {
 			return nil, err
@@ -81,7 +89,7 @@ func (u *User) GetByEmail(email string) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `SELECT id, email, first_name, last_name, password, created_at, updated_at FROM users WHERE email = $1`
+	query := `SELECT id, email, first_name, last_name, password, user_active, created_at, updated_at FROM users WHERE email = $1`
 
 	var user User
 	row := db.QueryRowContext(ctx, query, email)
@@ -92,6 +100,7 @@ func (u *User) GetByEmail(email string) (*User, error) {
 		&user.FirstName,
 		&user.LastName,
 		&user.Password,
+		&user.Active,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -106,7 +115,7 @@ func (u *User) GetOne(id int) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `SELECT id, email, first_name, last_name, password, created_at, updated_at FROM users WHERE id = $1`
+	query := `SELECT id, email, first_name, last_name, password, user_active, created_at, updated_at FROM users WHERE id = $1`
 
 	var user User
 	row := db.QueryRowContext(ctx, query, id)
@@ -117,6 +126,7 @@ func (u *User) GetOne(id int) (*User, error) {
 		&user.FirstName,
 		&user.LastName,
 		&user.Password,
+		&user.Active,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -135,14 +145,16 @@ func (u *User) Update() error {
 		email = $1,
 		first_name = $2,
 		last_name = $3,
-		updated_at = $4
-		WHERE id = $5
+		user_active = $4,
+		updated_at = $5
+		WHERE id = $6
 	`
 
 	_, err := db.ExecContext(ctx, stmt,
 		u.Email,
 		u.FirstName,
 		u.LastName,
+		u.Active,
 		time.Now(),
 		u.ID,
 	)
@@ -192,8 +204,8 @@ func (u *User) Insert(user User) (int, error) {
 	}
 
 	var newID int
-	stmt := `INSERT INTO users (email, first_name, last_name, password, created_at, updated_at)
-		values ($1, $2, $3, $4, $5, $6) returning id
+	stmt := `INSERT INTO users (email, first_name, last_name, password, user_active, created_at, updated_at)
+		values ($1, $2, $3, $4, $5, $6, $7) returning id
 	`
 
 	err = db.QueryRowContext(ctx, stmt,
@@ -201,6 +213,7 @@ func (u *User) Insert(user User) (int, error) {
 		user.FirstName,
 		user.LastName,
 		hashedPassword,
+		user.Active,
 		time.Now(),
 		time.Now(),
 	).Scan(&newID)
@@ -285,7 +298,7 @@ func (t *Token) GetUserForToken(token Token) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `SELECT id, email, first_name, last_name, password, created_at, updated_at FROM users WHERE id = $1`
+	query := `SELECT id, email, first_name, last_name, password, user_active, created_at, updated_at FROM users WHERE id = $1`
 
 	var user User
 	row := db.QueryRowContext(ctx, query, token.UserID)
@@ -296,6 +309,7 @@ func (t *Token) GetUserForToken(token Token) (*User, error) {
 		&user.FirstName,
 		&user.LastName,
 		&user.Password,
+		&user.Active,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -355,6 +369,10 @@ func (t *Token) AuthenticateToken(r *http.Request) (*User, error) {
 		return nil, errors.New("no matching user found")
 	}
 
+	if user.Active == 0 {
+		return nil, errors.New("user not active")
+	}
+
 	return user, nil
 }
 
@@ -398,6 +416,19 @@ func (t *Token) DeleteByToken(plainText string) error {
 	stmt := `DELETE FROM tokens WHERE token = $1`
 
 	_, err := db.ExecContext(ctx, stmt, plainText)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *Token) DeleteTokensForUser(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	stmt := `DELETE FROM tokens WHERE user_id = $1`
+	_, err := db.ExecContext(ctx, stmt, id)
 	if err != nil {
 		return err
 	}

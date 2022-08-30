@@ -48,6 +48,16 @@
             :value="user.password"
             name="password"></TextInputComponent>
 
+          <div class="form-check">
+            <input v-model="user.active" class="form-check-input" type="radio" id="user-active" :value="1">
+            <label class="form-check-label" for="user-active">Active</label>
+          </div>
+
+          <div class="form-check">
+            <input v-model="user.active" class="form-check-input" type="radio" id="user-active-2" :value="0">
+            <label class="form-check-label" for="user-active-2">Inactive</label>
+          </div>
+
           <hr>
 
           <div class="float-start">
@@ -72,6 +82,7 @@ import FormTagComponent from './forms/FormTagComponent.vue'
 import TextInputComponent from './forms/TextInputComponent.vue'
 import notie from 'notie'
 import { store } from './store'
+import router from './../router'
 
 export default {
   beforeMount() {
@@ -83,10 +94,7 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           if (data.error) {
-            notie.alert({
-              type: 'error',
-              text: data.message
-            })
+            this.$emit('error', data.message)
           } else {
             this.user = data
             // we want the password to be empty for existing users
@@ -103,6 +111,7 @@ export default {
         last_name: '',
         email: '',
         password: '',
+        active: 0
       },
       store
     }
@@ -119,28 +128,21 @@ export default {
         last_name: this.user.last_name,
         email: this.user.email,
         password: this.user.password,
+        active: this.user.active
       }
 
       fetch(`${process.env.VUE_APP_API_URL}/admin/users/save`, Security.requestOptions(payload))
       .then((response) => response.json())
       .then((data) => {
         if (data.error) {
-          notie.alert({
-            type: 'error',
-            text: data.message,
-          })
+          this.$emit('error', data.message)
         } else {
-          notie.alert({
-            type: 'success',
-            text: 'Changes saved!',
-          })
+          this.$emit('success', 'Changes saved')
+          router.push('/admin/users')
         } 
       })
       .catch((error) => {
-        notie.alert({
-          type: 'error',
-          text: error,
-        })
+        this.$emit('error', error)
       })
     }, 
     confirmDelete(id) {
@@ -148,7 +150,6 @@ export default {
         text: 'Are you sure you want to delete this user?',
         submitText: 'Delete',
         submitCallback: function() {
-          console.log('will delete', id)
           let payload = {
             id
           }
@@ -157,15 +158,10 @@ export default {
           .then((response) => response.json())
           .then((data) => {
             if (data.error) {
-              notie.alert({
-                type: 'error',
-                text: data.message,
-              })
+              this.$emit('error', data.message)
             } else {
-              notie.alert({
-                type: 'success',
-                text: 'User deleted'
-              })
+              this.$emit('success', 'User deleted')
+              router.push('/admin/users')
             }
           })
         }

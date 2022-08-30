@@ -1,7 +1,7 @@
 <template>
   <Header />
   <div>
-    <router-view></router-view>
+    <router-view :key="componentKey" @success="success" @error="error" @warning="warning" @forceUpdate="forceUpdate"></router-view>
   </div>
   <Footer />
 </template>
@@ -10,6 +10,7 @@
 import Header from './components/HeaderComponent.vue'
 import Footer from './components/FooterComponent.vue'
 import { store } from './components/store.js'
+import notie from 'notie'
 
 const getCookie = name => {
   return document.cookie.split("; ").reduce((r, v) => {
@@ -26,7 +27,8 @@ export default {
   },
   data() {
     return {
-      store
+      store,
+      componentKey: 0
     }
   },
   beforeMount() {
@@ -43,6 +45,29 @@ export default {
         last_name: cookieData.user.last_name,
         email: cookieData.user.email
       }
+    }
+  },
+  methods: {
+    success(msg) {
+      notie.alert({
+        type: 'success',
+        text: msg
+      })
+    },
+    error(msg) {
+      notie.alert({
+        type: 'error',
+        text: msg
+      })
+    },
+    warning(msg) {
+      notie.alert({
+        type: 'warning',
+        text: msg
+      })
+    },
+    forceUpdate() {
+      this.componentKey += 1
     }
   }
 }
