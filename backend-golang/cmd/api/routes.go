@@ -46,9 +46,9 @@ func (app *application) routes() http.Handler {
 
 	mux.Get("/users/add", func(w http.ResponseWriter, r *http.Request) {
 		var u = data.User{
-			Email:     "admin3@example.com",
-			FirstName: "Admin",
-			LastName:  "User",
+			Email:     "you@there.com",
+			FirstName: "You",
+			LastName:  "There",
 			Password:  "password",
 		}
 

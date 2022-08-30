@@ -12,7 +12,7 @@ import Security from '../components/security'
 const routes = [
   { path: '/', name: 'Home', component: Body },
   { path: '/login', name: 'Login', component: Login },
-  { path: '/books', name: 'Books', component: Books },
+  { path: '/books', name: 'BooksComponent', component: Books },
   { path: '/book/:bookName', name: 'Book', component: Book },
   { path: '/admin/books', name: 'BooksAdmin', component: BooksAdmin },
   { path: '/admin/books/:bookId', name: 'BookEdit', component: BookEdit },
