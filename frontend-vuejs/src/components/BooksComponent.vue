@@ -20,14 +20,15 @@
 
       <div>
         <div class="card-group">
-          <div class="p-3 d-flex flex-wrap">
+          <transition-group class="p-3 d-flex flex-wrap" tag="div" appear name="books">
             <div v-for="book in this.books" :key="book.id">
 
               <br>  
 
               <div class="card me-2 ms-1 mb-3" style="width: 10rem;" v-if="book.genres.find(item => item.id === currentFilter) || currentFilter === 0">
-                <img :src="`${this.imgPath}/covers/${book.slug}.jpg`" class="card-img-top" :alt="`cover for ${book.title}`">
-                
+                <router-link :to="`/book/${book.slug}`">
+                  <img :src="`${this.imgPath}/covers/${book.slug}.jpg`" class="card-img-top" :alt="`cover for ${book.title}`">
+                </router-link>
                 <div class="card-body text-center">
                   <h6 class="card-title">{{book.title}}</h6>
                   <span class="book-author">{{book.author.author_name}}</span><br>
@@ -40,7 +41,7 @@
 
               </div>
             </div>
-          </div>
+          </transition-group>
         </div>
       </div>
     </div>
@@ -108,5 +109,22 @@ export default {
 
 .book-author, .book-genre {
     font-size: 0.8em;
+}
+
+/* transition styles */
+.books-move {
+  transition: all 0.5s ease-in-out 0.05s;
+}
+
+.books-enter-active {
+  transition: all 0.5s ease-in-out;
+}
+
+.books-leave-active {
+  transition: all 0.5s ease-in;
+}
+
+.books-enter, .books-leave-to {
+  opacity: 0;
 }
 </style>
