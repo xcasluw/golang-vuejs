@@ -238,13 +238,32 @@ func (b *Book) Insert(book Book) (int, error) {
 		book.Title,
 		book.AuthorID,
 		book.PublicationYear,
-		slugify.Slugify(b.Title),
+		slugify.Slugify(book.Title),
 		book.Description,
 		time.Now(),
 		time.Now(),
 	).Scan(&newID)
 	if err != nil {
 		return 0, err
+	}
+
+	// update genres using genre ids
+	if len(book.GenreIDs) > 0 {
+		stmt = `delete from books_genres where book_id = $1`
+		_, err := db.ExecContext(ctx, stmt, book.ID)
+		if err != nil {
+			return newID, fmt.Errorf("book updated, but genres not: %s", err.Error())
+		}
+
+		// add new genres
+		for _, x := range book.GenreIDs {
+			stmt = `insert into books_genres (book_id, genre_id, created_at, updated_at)
+				values ($1, $2, $3, $4)`
+			_, err = db.ExecContext(ctx, stmt, newID, x, time.Now(), time.Now())
+			if err != nil {
+				return newID, fmt.Errorf("book updated, but genres not: %s", err.Error())
+			}
+		}
 	}
 
 	return newID, nil

@@ -38,7 +38,6 @@
                     </em>
                   </small>
                 </div>
-
               </div>
             </div>
           </transition-group>
@@ -67,7 +66,7 @@ export default {
     fetch(`${process.env.VUE_APP_API_URL}/books`)
       .then((response) => response.json())
       .then((data) => {
-        if (this.error) {
+        if (data.error) {
           this.$emit('error', data.message)
         } else {
           this.books = data.data.books
