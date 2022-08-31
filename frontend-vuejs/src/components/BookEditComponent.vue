@@ -33,7 +33,7 @@
 
           <TextInput
               v-model="book.publication_year"
-              type="text"
+              type="number"
               required="true"
               label="Publication Year"
               :value="book.publication_year"
@@ -122,7 +122,7 @@ export default {
         id: 0,
         title: "",
         author_id: 0,
-        publication_year: 0,
+        publication_year: null,
         description: "",
         cover: "",
         slug: "",
@@ -148,7 +148,7 @@ export default {
         id: this.book.id,
         title: this.book.title,
         author_id : parseInt(this.book.author_id, 10),
-        publication_year: this.book.publication_year,
+        publication_year: parseInt(this.book.publication_year, 10),
         description: this.book.description,
         cover: this.book.cover,
         slug: this.book.slug,

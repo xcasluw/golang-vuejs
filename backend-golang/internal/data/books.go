@@ -23,6 +23,7 @@ type Book struct {
 	Genres          []Genre   `json:"genres"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
+	GenreIDs        []int     `json:"genre_ids,omitempty"`
 }
 
 // Author is the definition of a single author
@@ -230,7 +231,7 @@ func (b *Book) Insert(book Book) (int, error) {
 	defer cancel()
 
 	stmt := `insert into books (title, author_id, publication_year, slug, description, created_at, updated_at)
-            values ($1, $2, $3, $4, $5) returning id`
+			values ($1, $2, $3, $4, $5, $6, $7) returning id`
 
 	var newID int
 	err := db.QueryRowContext(ctx, stmt,
