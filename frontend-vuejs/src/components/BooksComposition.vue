@@ -1,0 +1,143 @@
+<template>
+
+  <!-- we must remove all references to this -->
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1 class="mt-3">Books</h1>
+      </div>
+
+      <hr>
+
+      <div class="filters text-center">
+        <span class="filter me-1" v-bind:class="{ active: currentFilter === 0 }" v-on:click="setFilter(0)">ALL</span>
+        <span class="filter me-1" v-bind:class="{ active: currentFilter === 7 }" v-on:click="setFilter(7)">CLASSIC</span>
+        <span class="filter me-1" v-bind:class="{ active: currentFilter === 2 }" v-on:click="setFilter(2)">FANTASY</span>
+        <span class="filter me-1" v-bind:class="{ active: currentFilter === 6 }" v-on:click="setFilter(6)">HORROR</span>
+        <span class="filter me-1" v-bind:class="{ active: currentFilter === 4 }" v-on:click="setFilter(4)">THRILLER</span>
+        <span class="filter me-1" v-bind:class="{ active: currentFilter === 1 }" v-on:click="setFilter(1)">SCIENCE FICTION</span>
+      </div>
+
+      <hr>
+
+      <div>
+        <div class="card-group">
+          <transition-group class="p-3 d-flex flex-wrap" tag="div" appear name="books">
+            <div v-for="book in books" :key="book.id">
+
+              <br>  
+
+              <div class="card me-2 ms-1 mb-3" style="width: 10rem;" v-if="book.genres.find(item => item.id === currentFilter) || currentFilter === 0">
+                <router-link :to="`/book/${book.slug}`">
+                  <img :src="`${imgPath}/covers/${book.slug}.jpg`" class="card-img-top" :alt="`cover for ${book.title}`">
+                </router-link>
+                <div class="card-body text-center">
+                  <h6 class="card-title">{{book.title}}</h6>
+                  <span class="book-author">{{book.author.author_name}}</span><br>
+                  <small class="text-muted book-genre" v-for="(genre, index) in book.genres" v-bind:key="genre.id">
+                    <em class="me-1">{{genre.genre_name}}
+                      <template v-if="index !== (book.genres.length -1)">,</template>
+                    </em>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </transition-group>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import {ref, onMounted} from 'vue'
+
+export default {
+  name: 'BooksComposition',
+  emits: ['error'],
+  props: {},
+
+  setup(props, ctx) {
+    // set up state for this component
+    let ready = ref(false)
+    let currentFilter = ref(0)
+    const imgPath = ref(`${process.env.VUE_APP_IMAGE_URL}`)
+    let books = ref({})
+
+    // onMounted lifecycle hook to get books
+    onMounted(() => {
+      fetch(`${process.env.VUE_APP_API_URL}/books`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          ctx.emit('error', data.message)
+        } else {
+          books.value = data.data.books
+          ready.value = true
+        }
+      })
+      .catch((error) => {
+        ctx.emit('error', error)
+      })
+    })
+
+    function setFilter(filter) {
+      currentFilter.value = filter
+    }
+
+    // return data and functions
+    return {
+      currentFilter,
+      imgPath,
+      books,
+      setFilter,
+      ready
+    }
+  }
+}
+</script>
+
+
+<style scoped>
+.filters {
+    height: 2.5em;
+}
+
+.filter {
+    padding: 6px 6px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.35s;
+    border: 1px solid silver;
+}
+
+.filter.active {
+    background: lightgreen;
+}
+
+.filter:hover {
+    background: lightgray;
+}
+
+
+.book-author, .book-genre {
+    font-size: 0.8em;
+}
+
+/* transition styles */
+.books-move {
+  transition: all 0.5s ease-in-out 0.05s;
+}
+
+.books-enter-active {
+  transition: all 0.5s ease-in-out;
+}
+
+.books-leave-active {
+  transition: all 0.5s ease-in;
+}
+
+.books-enter, .books-leave-to {
+  opacity: 0;
+}
+</style>
