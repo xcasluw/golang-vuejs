@@ -22,8 +22,6 @@
             required="true">
           </TextInputComponent>
 
-          Email: {{ email }}
-
           <hr>
           <input type="submit" class="btn btn-primary" value="Login">
         </FormTagComponent>
