@@ -3,7 +3,7 @@
   <div>
     <!-- Caching components -->
     <router-view v-slot="{ Component }" :key="componentKey" @success="success" @error="error" @warning="warning" @forceUpdate="forceUpdate">
-      <keep-alive include="BooksComponent">
+      <keep-alive include="BooksComposition">
         <component :is="Component" />
       </keep-alive>
     </router-view>
